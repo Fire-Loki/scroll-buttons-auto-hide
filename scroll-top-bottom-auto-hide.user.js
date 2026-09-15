@@ -16,6 +16,7 @@
 
     // ==================== НАСТРОЙКИ ====================
     const HIDE_DELAY = 1500;        // Через сколько мс исчезают кнопки (1500 = 1.5 сек)
+    const SHOW_AFTER = 150;         // После скольких пикселей прокрутки показывать кнопки
     const BUTTON_SIZE = 44;         // Размер кнопок в пикселях
     const RIGHT_OFFSET = 20;        // Отступ справа
     const BOTTOM_OFFSET = 30;       // Отступ снизу для нижней кнопки
@@ -98,11 +99,48 @@
 
     // Логика показа / скрытия
     let hideTimer = null;
+let isVisible = false;
+
+    function getScrollInfo() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const windowHeight = window.innerHeight;
+        const documentHeight = Math.max(
+            document.body.scrollHeight,
+            document.documentElement.scrollHeight
+        );
+        const maxScroll = documentHeight - windowHeight;
+
+        return {
+            scrollTop,
+            maxScroll,
+            atTop: scrollTop <= 10,
+            atBottom: scrollTop >= maxScroll - 10
+        };
+    }
+
+    function updateButtonsVisibility() {
+        const { scrollTop, atTop, atBottom } = getScrollInfo();
+
+        // Скрываем кнопки на краях
+        btnTop.style.opacity = atTop ? '0' : '1';
+        btnTop.style.pointerEvents = atTop ? 'none' : 'auto';
+
+        btnBottom.style.opacity = atBottom ? '0' : '1';
+        btnBottom.style.pointerEvents = atBottom ? 'none' : 'auto';
+
+        // Показываем контейнер только если прокрутили достаточно далеко
+        if (scrollTop > SHOW_AFTER && !atTop) {
+            showButtons();
+        }
+    }
 
     function showButtons() {
-        container.style.opacity = '1';
-        container.style.visibility = 'visible';
-        container.style.pointerEvents = 'auto';
+        if (!isVisible) {
+            container.style.opacity = '1';
+            container.style.visibility = 'visible';
+            container.style.pointerEvents = 'auto';
+            isVisible = true;
+        }
 
         clearTimeout(hideTimer);
         hideTimer = setTimeout(hideButtons, HIDE_DELAY);
@@ -112,21 +150,22 @@
         container.style.opacity = '0';
         container.style.visibility = 'hidden';
         container.style.pointerEvents = 'none';
+        isVisible = false;
     }
 
-    // Показываем при любой прокрутке
+    // Обработка прокрутки
     let ticking = false;
     window.addEventListener('scroll', () => {
         if (!ticking) {
             window.requestAnimationFrame(() => {
-                showButtons();
+                updateButtonsVisibility();
                 ticking = false;
             });
             ticking = true;
         }
     }, { passive: true });
 
-    // Также показываем при прокрутке колёсиком / тачпадом
-    window.addEventListener('wheel', showButtons, { passive: true });
-
+    // На всякий случай при загрузке
+    window.addEventListener('load', updateButtonsVisibility);
+    updateButtonsVisibility();
 })();

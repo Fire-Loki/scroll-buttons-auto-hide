@@ -7,6 +7,8 @@
 // @match        *://*/*
 // @grant        none
 // @run-at       document-end
+// @downloadURL  https://raw.githubusercontent.com/Fire-Loki/scroll-buttons-auto-hide/main/scroll-top-bottom-auto-hide.user.js
+// @updateURL    https://raw.githubusercontent.com/Fire-Loki/scroll-buttons-auto-hide/main/scroll-top-bottom-auto-hide.user.js
 // ==/UserScript==
 
 (function() {
